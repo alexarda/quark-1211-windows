@@ -662,6 +662,10 @@
   MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
   QuarkSocPkg/QuarkSouthCluster/IohInit/Dxe/IohInitDxe.inf
   QuarkSocPkg/QuarkSouthCluster/Uart/Dxe/SerialDxe.inf
+  MdeModulePkg/Bus/Pci/NvmExpressDxe/NvmExpressDxe.inf
+  MdeModulePkg/Universal/EbcDxe/EbcDxe.inf
+  MdeModulePkg/Bus/Ata/AtaBusDxe/AtaBusDxe.inf
+  MdeModulePkg/Bus/Ata/AtaAtapiPassThru/AtaAtapiPassThru.inf
 
   #
   # USB
