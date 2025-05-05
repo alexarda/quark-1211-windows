@@ -6862,7 +6862,7 @@ RELEASE_ARMLINUXGCC_AARCH64_CC_FLAGS = $(ARCHCC_FLAGS) $(PLATFORM_FLAGS) DEF(GCC
 #################
 # ASM 16 linker defintions
 #################
-*_*_*_ASMLINK_PATH                 = DEF(WINDDK_BIN16)\link16.exe
+*_*_*_ASMLINK_PATH                 = C:\masm32\bin\link16.exe
 *_*_*_ASMLINK_FLAGS                = /nologo /tiny
 
 ##################
