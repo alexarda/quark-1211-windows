@@ -186,7 +186,7 @@ if not defined VS_VERSION (
 set VS_X86=
 set VSCOMNTOOLS_TMP=%VSCOMNTOOLS:(x86)=%
 if  %VSCOMNTOOLS_TMP% == %VSCOMNTOOLS% goto ParseContinue
-set VS_X86=x86
+set VS_X86=x86xASL
 
 :ParseContinue
 @if not exist Build\%PLATFORM%\%TARGET%_%VS_VERSION%%VS_X86%\IA32 (
