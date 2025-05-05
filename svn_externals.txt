@@ -1,0 +1,13 @@
+BaseTools               -r16557 http://svn.code.sf.net/p/edk2/code/branches/UDK2014.SP1/BaseTools
+MdePkg                  -r16557 http://svn.code.sf.net/p/edk2/code/branches/UDK2014.SP1/MdePkg
+MdeModulePkg            -r16557 http://svn.code.sf.net/p/edk2/code/branches/UDK2014.SP1/MdeModulePkg
+IntelFrameworkPkg       -r16557 http://svn.code.sf.net/p/edk2/code/branches/UDK2014.SP1/IntelFrameworkPkg
+IntelFrameworkModulePkg -r16557 http://svn.code.sf.net/p/edk2/code/branches/UDK2014.SP1/IntelFrameworkModulePkg
+EdkShellBinPkg          -r16557 http://svn.code.sf.net/p/edk2/code/branches/UDK2014.SP1/EdkShellBinPkg
+PcAtChipsetPkg          -r16557 http://svn.code.sf.net/p/edk2/code/branches/UDK2014.SP1/PcAtChipsetPkg
+UefiCpuPkg              -r16557 http://svn.code.sf.net/p/edk2/code/branches/UDK2014.SP1/UefiCpuPkg
+ShellPkg                -r16557 http://svn.code.sf.net/p/edk2/code/branches/UDK2014.SP1/ShellPkg
+SourceLevelDebugPkg     -r16557 http://svn.code.sf.net/p/edk2/code/branches/UDK2014.SP1/SourceLevelDebugPkg
+CryptoPkg               -r16557 http://svn.code.sf.net/p/edk2/code/branches/UDK2014.SP1/CryptoPkg
+SecurityPkg             -r16557 http://svn.code.sf.net/p/edk2/code/branches/UDK2014.SP1/SecurityPkg
+FatPkg                  -r92    http://svn.code.sf.net/p/edk2-fatdriver2/code/trunk/FatPkg
