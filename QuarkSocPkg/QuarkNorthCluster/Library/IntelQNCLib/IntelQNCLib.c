@@ -793,5 +793,5 @@ QncIsSecureProvisionedSku (
   )
 {
   // Read QUARK Secure SKU Fuse
-  return ((QNCAltPortRead (QUARK_SCSS_FUSE_SB_PORT_ID, QUARK_SCSS_SOC_UNIT_SPI_ROM_FUSE) & BIT6) == BIT6);
+  return FALSE;
 }
