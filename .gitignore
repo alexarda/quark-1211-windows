@@ -1,3 +1,5 @@
 /Build/
 /Conf/
 Report.log
+/SignTool/signed_output/
+/SignTool/withPDAT.bin

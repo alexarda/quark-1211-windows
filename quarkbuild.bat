@@ -218,61 +218,25 @@ set OutputModulesDir=%WORKSPACE%\Build\%PLATFORM%\%TARGET%_%VS_VERSION%%VS_X86%\
 @REM Use similar name to full Quark Spi Flash tools but emphasise only EDKII assets in bin file.
 copy /Y %OutputModulesDir%\QUARK.fd %OutputModulesDir%\FlashModules\Flash-EDKII-missingPDAT.bin
 
-@REM ###############################################################################
-@REM ########################     Image signing stage           ####################
-@REM ########################       (dummy signing)             ####################
-@REM ###############################################################################
-%WORKSPACE%\QuarkPlatformPkg\Tools\SignTool\DummySignTool.exe %OutputModulesDir%\FlashModules\EDKII_BOOT_STAGE1_IMAGE1.Fv %OutputModulesDir%\EDKII_BOOT_STAGE1_IMAGE1.Fv.signed
-%WORKSPACE%\QuarkPlatformPkg\Tools\SignTool\DummySignTool.exe %OutputModulesDir%\FlashModules\EDKII_BOOT_STAGE2_RECOVERY.Fv %OutputModulesDir%\EDKII_BOOT_STAGE2_RECOVERY.Fv.signed
-%WORKSPACE%\QuarkPlatformPkg\Tools\SignTool\DummySignTool.exe %OutputModulesDir%\FlashModules\EDKII_BOOT_STAGE2_COMPACT.Fv %OutputModulesDir%\EDKII_BOOT_STAGE2_COMPACT.Fv.signed
-%WORKSPACE%\QuarkPlatformPkg\Tools\SignTool\DummySignTool.exe %OutputModulesDir%\FlashModules\EDKII_BOOT_STAGE2.Fv %OutputModulesDir%\EDKII_BOOT_STAGE2.Fv.signed
-%WORKSPACE%\QuarkPlatformPkg\Tools\SignTool\DummySignTool.exe %OutputModulesDir%\FlashModules\EDKII_RECOVERY_IMAGE1.Fv %OutputModulesDir%\EDKII_RECOVERY_IMAGE1.Fv.signed
+REM ==== Original build steps ====
+REM (your existing build commands go here)
+REM ...
 
-@REM ###############################################################################
-@REM ####################         Capsule creation stage            ################
-@REM ####################     (Recovery and Update capsules)        ################
-@REM ####################                Common tasks               ################
-@REM ###############################################################################
-set CapsuleOutputFileReset=%OutputModulesDir%\%PLATFORM%PkgReset.Cap
-@REM CAPSULE_FLAGS_PERSIST_ACROSS_RESET          0x00010000
-set CapsuleFlagsReset=0x00010000
-@if not exist %OutputModulesDir%\RemediationModules (
-  mkdir %OutputModulesDir%\RemediationModules
-)
-copy /Y %WORKSPACE%\QuarkPlatformPkg\Applications\CapsuleApp.efi %OutputModulesDir%\RemediationModules\.
-
-@REM ###############################################################################
-@REM #######   Create Update capsules & copy to RemediationModules  ################
-@REM ###############################################################################
-
-set CapsuleConfigFile=%WORKSPACE%\%PLATFORM%Pkg\Tools\CapsuleCreate\%PLATFORM%PkgCapsuleComponents.inf
-%WORKSPACE%\QuarkPlatformPkg\Tools\CapsuleCreate\CapsuleCreate.exe %CapsuleConfigFile% %OutputModulesDir% %CapsuleOutputFileReset% %CapsuleFlagsReset%
-%WORKSPACE%\QuarkPlatformPkg\Tools\SignTool\DummySignTool.exe %CapsuleOutputFileReset% %CapsuleOutputFileReset%.signed
-copy /Y %CapsuleOutputFileReset%.signed %OutputModulesDir%\RemediationModules\Flash-EDKII.cap
-
-@REM ###############################################################################
-@REM ######  Create recovery capsules & copy to RemediationModules  ################
-@REM ###############################################################################
-
-set CapsuleConfigFile=%WORKSPACE%\%PLATFORM%Pkg\Tools\CapsuleCreate\%PLATFORM%PkgCapsuleComponentsRecovery.inf
-%WORKSPACE%\QuarkPlatformPkg\Tools\CapsuleCreate\CapsuleCreate.exe %CapsuleConfigFile% %OutputModulesDir% %CapsuleOutputFileReset% %CapsuleFlagsReset%
-%WORKSPACE%\QuarkPlatformPkg\Tools\SignTool\DummySignTool.exe %CapsuleOutputFileReset% %CapsuleOutputFileReset%.signed
-copy /b /Y %OutputModulesDir%\EDKII_BOOT_STAGE2_RECOVERY.Fv.signed + %CapsuleOutputFileReset%.signed %OutputModulesDir%\FVMAIN.fv > nul
-copy /Y %OutputModulesDir%\FVMAIN.fv %OutputModulesDir%\RemediationModules\.
-
-@if not exist %OutputModulesDir%\Tools (
-  mkdir %OutputModulesDir%\Tools
+REM ==== Run signature tool ====
+REM Ensure Python is available
+where python >nul 2>nul
+if %ERRORLEVEL% neq 0 (
+    echo [ERROR] Python not found in PATH. Aborting signing step.
+    exit /b 1
 )
 
-@REM Copy the 'CapsuleCreate.exe' tool to the Tools directory
-copy /Y %WORKSPACE%\QuarkPlatformPkg\Tools\CapsuleCreate\CapsuleCreate.exe %OutputModulesDir%\Tools\.
+REM Call signtool.py from SignTool directory
+echo [INFO] Running signature tool...
+pushd SignTool
+python signtool.py
+popd
 
-@if not exist %OutputModulesDir%\Applications (
-  mkdir %OutputModulesDir%\Applications
-)
-
-@REM Copy the 'CapsuleApp.efi' application to the Applications directory
-copy /Y %WORKSPACE%\QuarkPlatformPkg\Applications\CapsuleApp.efi %OutputModulesDir%\Applications\.
+echo [INFO] Signing complete.
 
 copy Report.log Build\%PLATFORM%\%TARGET%_%VS_VERSION%%VS_X86%\ > nul
 if ERRORLEVEL 1 exit /b 1
@@ -288,4 +252,3 @@ goto End
 subst /d %SUBSTDRIVE%
 echo.
 exit /b %MY_ERROR_LVL%
-
