@@ -156,12 +156,7 @@ GetPciRom (
 
   PciIo->Pci.Read (PciIo, EfiPciIoWidthUint16, 2, 1, &DeviceId);
 
-  
-          DEBUG ((EFI_D_INFO, "PCI Device - Seg=%u Bus=%u Dev=%u Func=%u Ven=%04x Dev=%04x Class=%02x%02x%02x", Segment, Bus, Device, Function, VendorId, DeviceId, (UINT8)((UINT32)DeviceClass >> 16), (UINT8)(((UINT32)DeviceClass >> 8) & 0xFF), (UINT8)((UINT32)DeviceClass & 0xFF)));
-
-
-
-//
+  //
   // Loop through table of video option rom descriptions
   //
   for (TableIndex = 0; mPciOptionRomTable[TableIndex].VendorId != 0xffff; TableIndex++) {
@@ -216,6 +211,8 @@ Returns:
   EFI_STATUS  Status;
 
   mImageHandle = ImageHandle;
+
+  DEBUG ((EFI_D_INFO, "=== PCI Platform driver loaded ===\n"));
 
   //
   // Install on a new handle

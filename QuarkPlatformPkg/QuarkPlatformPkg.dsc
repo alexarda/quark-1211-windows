@@ -53,6 +53,7 @@
   # -D FLAG=VALUE
   #
   DEFINE SECURE_BOOT_ENABLE      = FALSE
+  DEFINE DEBUG_PRINT_ERROR_LEVEL = 0x8000004F
 
   #
   # Set the global variables
@@ -231,7 +232,7 @@
   # SEC specific phase
   #
   ReportStatusCodeLib|MdePkg/Library/BaseReportStatusCodeLibNull/BaseReportStatusCodeLibNull.inf
-  DebugLib|MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
+#  DebugLib|MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
   PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
 
 [LibraryClasses.IA32]
@@ -441,7 +442,10 @@
   # SEC Core
   #
   IA32FamilyCpuBasePkg/SecCore/SecCore.inf
-  QuarkPlatformPkg/Cpu/Sec/ResetVector/QuarkResetVector.inf
+  QuarkPlatformPkg/Cpu/Sec/ResetVector/QuarkResetVector.inf {
+   <LibraryClasses>
+     DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
+ }
 
   #
   # PEI Core
@@ -570,7 +574,10 @@
       PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
   }
 
-  $(PLATFORM_PKG)/Pci/Dxe/PciHostBridge/PciHostBridge.inf
+  $(PLATFORM_PKG)/Pci/Dxe/PciHostBridge/PciHostBridge.inf {
+    <LibraryClasses>
+      DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
+  } 
   $(PLATFORM_PKG)/Platform/SpiFvbServices/PlatformSpi.inf
   $(PLATFORM_PKG)/Platform/SpiFvbServices/PlatformSmmSpi.inf
 
@@ -658,8 +665,14 @@
   #
   # PCI
   #
-  QuarkPlatformPkg/Pci/Dxe/PciPlatform/PciPlatform.inf
-  MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
+  QuarkPlatformPkg/Pci/Dxe/PciPlatform/PciPlatform.inf {
+    <LibraryClasses>
+      DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
+  }  
+  MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf {
+    <LibraryClasses>
+      DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
+  }
   QuarkSocPkg/QuarkSouthCluster/IohInit/Dxe/IohInitDxe.inf
   QuarkSocPkg/QuarkSouthCluster/Uart/Dxe/SerialDxe.inf
   MdeModulePkg/Bus/Pci/NvmExpressDxe/NvmExpressDxe.inf

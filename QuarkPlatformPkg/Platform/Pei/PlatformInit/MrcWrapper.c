@@ -110,26 +110,16 @@ MrcUartConfig(
 static
 EFI_STATUS
 MrcConfigureFromMcFuses (
-  OUT MRC_PARAMS                          *MrcData
+  OUT MRC_PARAMS *MrcData
   )
 {
-  UINT32                            McFuseStat;
-  CHAR8                             *FuseFlagStr;
+  CHAR8 *FuseFlagStr;
 
-  FuseFlagStr = "";
-  McFuseStat = QNCPortRead (
-                 QUARK_NC_MEMORY_CONTROLLER_SB_PORT_ID,
-                 QUARK_NC_MEMORY_CONTROLLER_REG_DFUSESTAT
-                 );
+  // Force ECC off
+  MrcData->ecc_enables = 0;
+  FuseFlagStr = ": ECC is forced to be disabled";
 
-
-  if ((McFuseStat & B_DFUSESTAT_ECC_DIS) != 0) {
-    FuseFlagStr = ": fus_dun_ecc_dis";
-    MrcData->ecc_enables = 0;
-  } else {
-    MrcData->ecc_enables = 1;
-  }
-  DEBUG ((EFI_D_INFO, "MRC McFuseStat 0x%08x %a\n", McFuseStat, FuseFlagStr));
+  DEBUG ((EFI_D_INFO, "MRC McFuseStat 0x%08x %a\n", 0, FuseFlagStr));
   return EFI_SUCCESS;
 }
 

@@ -102,7 +102,7 @@ void PreMemInit(
       break;
 
     case 'b':
-      mrc_params->scrambling_enables ^= 1;
+      mrc_params->scrambling_enables ^= 0;
       DPF(D_INFO, "Scrambler enable %d\n", mrc_params->scrambling_enables);
       break;
 
