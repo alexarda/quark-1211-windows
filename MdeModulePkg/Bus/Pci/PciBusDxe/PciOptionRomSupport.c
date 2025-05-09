@@ -306,8 +306,6 @@ GetOpRomInfo (
   }
 
   PciIoDevice->RomSize = (UINT64) ((~AllOnes) + 1);
-  DEBUG ((EFI_D_INFO, "GetOpRomInfo: ROM Size = 0x%llx", PciIoDevice->RomSize));
-  DEBUG ((EFI_D_INFO, "GetOpRomInfo: ROM Size = 0x%llx", PciIoDevice->RomSize));
   return EFI_SUCCESS;
 }
 
@@ -695,9 +693,7 @@ ProcessOpRomImage (
     Buffer      = NULL;
     ImageHandle = NULL;
 
-    DEBUG ((EFI_D_INFO, "ProcessOpRomImage: Loading image offset 0x%x, size = 0x%x", EfiOpRomImageNode.StartingOffset, ImageSize));
-DEBUG ((EFI_D_INFO, "ProcessOpRomImage: LoadImage offset=0x%x size=0x%x", EfiOpRomImageNode.StartingOffset, ImageSize));
-Status = gBS->LoadImage (
+    Status = gBS->LoadImage (
                     FALSE,
                     gPciBusDriverBinding.DriverBindingHandle,
                     PciOptionRomImageDevicePath,
@@ -710,10 +706,6 @@ Status = gBS->LoadImage (
 
     if (!EFI_ERROR (Status)) {
       Status = gBS->StartImage (ImageHandle, NULL, NULL);
-  DEBUG ((EFI_D_INFO, "ProcessOpRomImage: StartImage returned %r", Status));
-  if (!EFI_ERROR(Status)) {
-    DEBUG ((EFI_D_INFO, "ProcessOpRomImage: Started image for device %02x:%02x.%x", PciDevice->BusNumber, PciDevice->DeviceNumber, PciDevice->FunctionNumber));
-  }
       if (!EFI_ERROR (Status)) {
         AddDriver (PciDevice, ImageHandle);
         PciRomAddImageMapping (

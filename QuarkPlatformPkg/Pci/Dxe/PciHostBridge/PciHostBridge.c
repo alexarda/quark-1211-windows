@@ -241,9 +241,7 @@ Returns:
   //
   // Add PCIE base into Runtime memory so that it can be reported in E820 table
   //
-  DEBUG ((EFI_D_INFO, "Adding MMIO32 region: Base=0x%08x, Size=0x%08x\n", mIioUds->IioUdsPtr->PlatformData.IIO_resource[IioResourceMapEntry].PciResourceMem32Base, mIioUds->IioUdsPtr->PlatformData.IIO_resource[IioResourceMapEntry].PciResourceMem32Limit - mIioUds->IioUdsPtr->PlatformData.IIO_resource[IioResourceMapEntry].PciResourceMem32Base + 1));
-DEBUG ((EFI_D_INFO, "Adding MMIO64 region: Base=0x%08x, Size=0x%08x\n", mIioUds->IioUdsPtr->PlatformData.IIO_resource[IioResourceMapEntry].PciResourceMem64Base, mIioUds->IioUdsPtr->PlatformData.IIO_resource[IioResourceMapEntry].PciResourceMem64Limit - mIioUds->IioUdsPtr->PlatformData.IIO_resource[IioResourceMapEntry].PciResourceMem64Base + 1));
-Status = gDS->AddMemorySpace (
+  Status = gDS->AddMemorySpace (
                   EfiGcdMemoryTypeMemoryMappedIo,
                   mIioUds->IioUdsPtr->PlatformData.PciExpressBase,
                   mIioUds->IioUdsPtr->PlatformData.PciExpressSize,
