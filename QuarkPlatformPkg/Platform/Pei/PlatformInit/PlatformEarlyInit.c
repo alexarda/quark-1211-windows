@@ -607,7 +607,7 @@ EarlyPlatformInfoMessages (
   }
   DEBUG (
     (EFI_D_INFO,
-    "Quark EDKII Stage2 0x%08X:0x%08X - Payload 0x%08X:0x%08X\n" ,
+    "Quark EDKII Stage2 0x%08X:0x%08X\n" ,
     (UINTN) PcdGet32 (PcdFlashFvMainBase),
     (UINTN) PcdGet32 (PcdFlashFvMainSize),
     (UINTN) PcdGet32 (PcdFlashFvPayloadBase),

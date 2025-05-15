@@ -136,8 +136,8 @@ GetPciRom (
   UINTN                         Function;
   UINT16                        VendorId;
   UINT16                        DeviceId;
-  UINT16                        DeviceClass;
-  UINTN                         TableIndex;
+  UINT32 						ClassCode;
+  UINTN                         TableIndex;  
 
   Status = gBS->HandleProtocol (
                   PciHandle,
@@ -150,13 +150,15 @@ GetPciRom (
 
   PciIo->GetLocation (PciIo, &Segment, &Bus, &Device, &Function);
 
-  PciIo->Pci.Read (PciIo, EfiPciIoWidthUint16, 0x0A, 1, &DeviceClass);
+  PciIo->Pci.Read (PciIo, EfiPciIoWidthUint32, 0x08, 1, &ClassCode);
 
   PciIo->Pci.Read (PciIo, EfiPciIoWidthUint16, 0, 1, &VendorId);
 
   PciIo->Pci.Read (PciIo, EfiPciIoWidthUint16, 2, 1, &DeviceId);
+  
+  DEBUG ((EFI_D_INFO, "PCI Device - Seg=%d Bus=%d Dev=%d Func=%d Ven=%04x Dev=%04x Class=%02x%02x%02x\n", Segment, Bus, Device, Function, VendorId, DeviceId, (UINT8)(ClassCode >> 16), (UINT8)(ClassCode >> 8), (UINT8)(ClassCode)));
 
-  //
+//
   // Loop through table of video option rom descriptions
   //
   for (TableIndex = 0; mPciOptionRomTable[TableIndex].VendorId != 0xffff; TableIndex++) {
@@ -211,8 +213,6 @@ Returns:
   EFI_STATUS  Status;
 
   mImageHandle = ImageHandle;
-
-  DEBUG ((EFI_D_INFO, "=== PCI Platform driver loaded ===\n"));
 
   //
   // Install on a new handle

@@ -606,11 +606,11 @@
       PciExpressLib|MdePkg/Library/DxeRuntimePciExpressLib/DxeRuntimePciExpressLib.inf
   }
   QuarkSocPkg/QuarkNorthCluster/Spi/Smm/PchSpiSmm.inf
-  QuarkSocPkg/QuarkNorthCluster/S3Support/Dxe/QncS3Support.inf {
-    <LibraryClasses>
-    DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
-    PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
-  }
+#  QuarkSocPkg/QuarkNorthCluster/S3Support/Dxe/QncS3Support.inf {
+#    <LibraryClasses>
+#    DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
+#    PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
+#  }
   IntelFrameworkModulePkg/Universal/DataHubDxe/DataHubDxe.inf
   IntelFrameworkModulePkg/Universal/DataHubStdErrDxe/DataHubStdErrDxe.inf
   IntelFrameworkModulePkg/Universal/SectionExtractionDxe/SectionExtractionDxe.inf
@@ -693,8 +693,8 @@
   #
   # SDIO
   #
-  QuarkSocPkg/QuarkSouthCluster/Sdio/Dxe/SDControllerDxe/SDControllerDxe.inf
-  QuarkSocPkg/QuarkSouthCluster/Sdio/Dxe/SDMediaDeviceDxe/SDMediaDeviceDxe.inf
+#  QuarkSocPkg/QuarkSouthCluster/Sdio/Dxe/SDControllerDxe/SDControllerDxe.inf
+#  QuarkSocPkg/QuarkSouthCluster/Sdio/Dxe/SDMediaDeviceDxe/SDMediaDeviceDxe.inf
 
   #       
   # IDE/SCSI

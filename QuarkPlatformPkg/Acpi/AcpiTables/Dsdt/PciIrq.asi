@@ -1,40 +1,10 @@
-/*++
+/** @file
 
-  Copyright (c) 2013-2016 Intel Corporation.
+Copyright (c) 2013-2015 Intel Corporation.
 
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions
-  are met:
+SPDX-License-Identifier: BSD-2-Clause-Patent
 
-  * Redistributions of source code must retain the above copyright
-  notice, this list of conditions and the following disclaimer.
-  * Redistributions in binary form must reproduce the above copyright
-  notice, this list of conditions and the following disclaimer in
-  the documentation and/or other materials provided with the
-  distribution.
-  * Neither the name of Intel Corporation nor the names of its
-  contributors may be used to endorse or promote products derived
-  from this software without specific prior written permission.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-  Module Name:
-
-    pciirq.asi
-
-  Abstract:
-
---*/
+**/
 
 
 // Interrupts can be DEB8=all except 13,8,6,2,1,0
@@ -97,11 +67,11 @@ Device(LNKA)            // PCI IRQ link A
         }
                                                     // Shift 1 by value in register 70
         ShiftLeft(Local0,And(PIRA,0x0F),IRQW)       // Save in buffer
-        Return(BUF0)                                // Return Buf0 
+        Return(BUF0)                                // Return Buf0
     }                                               // End of _CRS method
 
     Name(_PRS,
-        ResourceTemplate() 
+        ResourceTemplate()
         {IRQ(Level,ActiveLow,Shared){12,11,10,9,7,5,4,3}})
 
     Method(_SRS,1,NotSerialized)
@@ -109,12 +79,12 @@ Device(LNKA)            // PCI IRQ link A
         CreateWordField (ARG0, 0x01, IRQW)  // IRQ low
 
         FindSetRightBit(IRQW,Local0)          // Set IRQ
-        If (LNotEqual(IRQW,Zero)) 
+        If (LNotEqual(IRQW,Zero))
         {
             And(Local0, 0x7F,Local0)
             Decrement(Local0)
         }
-        Else 
+        Else
         {
             Or(Local0, 0x80,Local0)
         }
@@ -130,11 +100,11 @@ Device(LNKB)            // PCI IRQ link B
 
     Method(_STA,0,NotSerialized)
     {
-        If(And(PIRB, 0x80)) 
+        If(And(PIRB, 0x80))
         {
           Return(0x9)
         }
-        Else 
+        Else
         {
           Return(0xB)
         }    // Don't display
@@ -167,7 +137,7 @@ Device(LNKB)            // PCI IRQ link B
     }                                          // End of _CRS method
 
     Name(_PRS,
-        ResourceTemplate() 
+        ResourceTemplate()
         {IRQ(Level,ActiveLow,Shared){12,11,10,9,7,5,4,3}})
 
     Method(_SRS,1,NotSerialized)
@@ -175,7 +145,7 @@ Device(LNKB)            // PCI IRQ link B
         CreateWordField (ARG0, 0x01, IRQW)      // IRQ low
 
         FindSetRightBit(IRQW,Local0)            // Set IRQ
-        If (LNotEqual(IRQW,Zero)) 
+        If (LNotEqual(IRQW,Zero))
         {
             And(Local0, 0x7F,Local0)
             Decrement(Local0)
@@ -196,11 +166,11 @@ Device(LNKC)                                    // PCI IRQ link C
 
     Method(_STA,0,NotSerialized)
     {
-        If(And(PIRC, 0x80)) 
+        If(And(PIRC, 0x80))
         {
           Return(0x9)
         }
-        Else 
+        Else
         {
           Return(0xB)
         }    // Don't display
@@ -228,11 +198,11 @@ Device(LNKC)                                    // PCI IRQ link C
             Store(One,Local0)
         }                                      // Shift 1 by value in register 70
         ShiftLeft(Local0,And(PIRC,0x0F),IRQW)  // Save in buffer
-        Return(BUF0)                           // Return Buf0 
+        Return(BUF0)                           // Return Buf0
     }                                          // End of _CRS method
 
     Name(_PRS,
-        ResourceTemplate() 
+        ResourceTemplate()
         {IRQ(Level,ActiveLow,Shared){12,11,10,9,7,5,4,3}})
 
     Method(_SRS,1,NotSerialized)
@@ -240,7 +210,7 @@ Device(LNKC)                                    // PCI IRQ link C
         CreateWordField (ARG0, 0x01, IRQW)  // IRQ low
 
         FindSetRightBit(IRQW,Local0)        // Set IRQ
-        If (LNotEqual(IRQW,Zero)) 
+        If (LNotEqual(IRQW,Zero))
         {
             And(Local0, 0x7F,Local0)
             Decrement(Local0)
@@ -264,7 +234,7 @@ Device(LNKD)                                        // PCI IRQ link D
         {
           Return(0x9)
         }
-        Else 
+        Else
         {
           Return(0xB)
         }    // Don't display
@@ -292,11 +262,11 @@ Device(LNKD)                                        // PCI IRQ link D
             Store(One,Local0)
         }  // Shift 1 by value in register 70
         ShiftLeft(Local0,And(PIRD,0x0F),IRQW)  // Save in buffer
-        Return(BUF0)        // Return Buf0 
+        Return(BUF0)        // Return Buf0
     }                  // End of _CRS method
 
     Name(_PRS,
-        ResourceTemplate() 
+        ResourceTemplate()
         {IRQ(Level,ActiveLow,Shared){12,11,10,9,7,5,4,3}})
 
     Method(_SRS,1,NotSerialized)
@@ -304,7 +274,7 @@ Device(LNKD)                                        // PCI IRQ link D
         CreateWordField (ARG0, 0x01, IRQW)  // IRQ low
 
         FindSetRightBit(IRQW,Local0)// Set IRQ
-        If (LNotEqual(IRQW,Zero)) 
+        If (LNotEqual(IRQW,Zero))
         {
             And(Local0, 0x7F,Local0)
             Decrement(Local0)
@@ -325,11 +295,11 @@ Device(LNKE)           // PCI IRQ link E
 
     Method(_STA,0,NotSerialized)
     {
-        If(And(PIRE, 0x80)) 
+        If(And(PIRE, 0x80))
         {
           Return(0x9)
         }
-        Else 
+        Else
         {
           Return(0xB)
         }    // Don't display
@@ -345,7 +315,7 @@ Device(LNKE)           // PCI IRQ link E
         Name(BUF0,
             ResourceTemplate()
             {IRQ(Level,ActiveLow,Shared){0}})
-        
+
                                 // Define references to buffer elements
         CreateWordField (BUF0, 0x01, IRQW)  // IRQ low
                                 // Write current settings into IRQ descriptor
@@ -359,11 +329,11 @@ Device(LNKE)           // PCI IRQ link E
         }
                                                     // Shift 1 by value in register 70
         ShiftLeft(Local0,And(PIRE,0x0F),IRQW)       // Save in buffer
-        Return(BUF0)                                // Return Buf0 
+        Return(BUF0)                                // Return Buf0
     }                                               // End of _CRS method
 
     Name(_PRS,
-        ResourceTemplate() 
+        ResourceTemplate()
         {IRQ(Level,ActiveLow,Shared){12,11,10,9,7,5,4,3}})
 
     Method(_SRS,1,NotSerialized)
@@ -371,12 +341,12 @@ Device(LNKE)           // PCI IRQ link E
         CreateWordField (ARG0, 0x01, IRQW)  // IRQ low
 
         FindSetRightBit(IRQW,Local0)          // Set IRQ
-        If (LNotEqual(IRQW,Zero)) 
+        If (LNotEqual(IRQW,Zero))
         {
             And(Local0, 0x7F,Local0)
             Decrement(Local0)
         }
-        Else 
+        Else
         {
             Or(Local0, 0x80,Local0)
         }
@@ -392,11 +362,11 @@ Device(LNKF)            // PCI IRQ link F
 
     Method(_STA,0,NotSerialized)
     {
-        If(And(PIRF, 0x80)) 
+        If(And(PIRF, 0x80))
         {
           Return(0x9)
         }
-        Else 
+        Else
         {
           Return(0xB)
         }    // Don't display
@@ -425,11 +395,11 @@ Device(LNKF)            // PCI IRQ link F
         }
                                                // Shift 1 by value in register 70
         ShiftLeft(Local0,And(PIRF,0x0F),IRQW)  // Save in buffer
-        Return(BUF0)                           // Return Buf0 
+        Return(BUF0)                           // Return Buf0
     }                                          // End of _CRS method
 
     Name(_PRS,
-        ResourceTemplate() 
+        ResourceTemplate()
         {IRQ(Level,ActiveLow,Shared){12,11,10,9,7,5,4,3}})
 
     Method(_SRS,1,NotSerialized)
@@ -437,12 +407,12 @@ Device(LNKF)            // PCI IRQ link F
         CreateWordField (ARG0, 0x01, IRQW)      // IRQ low
 
         FindSetRightBit(IRQW,Local0)            // Set IRQ
-        If (LNotEqual(IRQW,Zero)) 
+        If (LNotEqual(IRQW,Zero))
         {
             And(Local0, 0x7F,Local0)
             Decrement(Local0)
         }
-        Else 
+        Else
         {
             Or(Local0, 0x80,Local0)
         }
@@ -458,7 +428,7 @@ Device(LNKG)                                            // PCI IRQ link G
 
     Method(_STA,0,NotSerialized)
     {
-        If(And(PIRG, 0x80)) 
+        If(And(PIRG, 0x80))
         {
           Return(0x9)
         }
@@ -490,11 +460,11 @@ Device(LNKG)                                            // PCI IRQ link G
             Store(One,Local0)
         }                                      // Shift 1 by value in register 70
         ShiftLeft(Local0,And(PIRG,0x0F),IRQW)  // Save in buffer
-        Return(BUF0)                           // Return Buf0 
+        Return(BUF0)                           // Return Buf0
     }                                          // End of _CRS method
 
     Name(_PRS,
-        ResourceTemplate() 
+        ResourceTemplate()
         {IRQ(Level,ActiveLow,Shared){12,11,10,9,7,5,4,3}})
 
     Method(_SRS,1,NotSerialized)
@@ -502,7 +472,7 @@ Device(LNKG)                                            // PCI IRQ link G
         CreateWordField (ARG0, 0x01, IRQW)  // IRQ low
 
         FindSetRightBit(IRQW,Local0)          // Set IRQ
-        If (LNotEqual(IRQW,Zero)) 
+        If (LNotEqual(IRQW,Zero))
         {
             And(Local0, 0x7F,Local0)
             Decrement(Local0)
@@ -554,11 +524,11 @@ Device(LNKH)                                        // PCI IRQ link H
             Store(One,Local0)
         }  // Shift 1 by value in register 70
         ShiftLeft(Local0,And(PIRH,0x0F),IRQW)  // Save in buffer
-        Return(BUF0)   // Return Buf0 
+        Return(BUF0)   // Return Buf0
     }                  // End of _CRS method
 
     Name(_PRS,
-        ResourceTemplate() 
+        ResourceTemplate()
         {IRQ(Level,ActiveLow,Shared){12,11,10,9,7,5,4,3}})
 
     Method(_SRS,1,NotSerialized)
@@ -571,7 +541,7 @@ Device(LNKH)                                        // PCI IRQ link H
             And(Local0, 0x7F,Local0)
             Decrement(Local0)
         }
-        Else 
+        Else
         {
             Or(Local0, 0x80,Local0)
         }

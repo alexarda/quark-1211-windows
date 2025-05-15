@@ -193,7 +193,7 @@
   gEfiQuarkNcSocIdTokenSpaceGuid.PcdIoApicSize|0x1000|UINT64|0x1000020D
   gEfiQuarkNcSocIdTokenSpaceGuid.PcdRcbaMmioSize|0x4000|UINT64|0x1000020E
 
-  gEfiQuarkNcSocIdTokenSpaceGuid.PcdPciExpressSize|0x02000000|UINT64|0x1000020F
+  gEfiQuarkNcSocIdTokenSpaceGuid.PcdPciExpressSize|0x10000000|UINT64|0x1000020F
   gEfiQuarkNcSocIdTokenSpaceGuid.PcdHpetBaseAddress|0xFED00000|UINT64|0x10000210
   gEfiQuarkNcSocIdTokenSpaceGuid.PcdHpetSize|0x400|UINT64|0x10000211
   gEfiQuarkNcSocIdTokenSpaceGuid.PcdTSegSize|0x200000|UINT32|0x10000212

@@ -160,7 +160,7 @@
   gQuarkPlatformTokenSpaceGuid.PcdFlashFvDefaultMainBase|0xFFD70400|UINT32|0x20000022
   gQuarkPlatformTokenSpaceGuid.PcdFlashFvDefaultMainSize|0x000D0000|UINT32|0x20000023
 
-  gQuarkPlatformTokenSpaceGuid.PcdMemorySize|0x80000000|UINT32|0x20000032
+  gQuarkPlatformTokenSpaceGuid.PcdMemorySize|0x40000000|UINT32|0x20000032
   gQuarkPlatformTokenSpaceGuid.PcdFvSecurityHeaderSize|0x400|UINT32|0x20000036
   # ECC scrub interval in miliseconds 1..255 (0 works as feature disable)
   gQuarkPlatformTokenSpaceGuid.PcdEccScrubInterval|0x00|UINT8|0x20000037
@@ -177,7 +177,7 @@
   gQuarkPlatformTokenSpaceGuid.PcdLegacyProtectedBIOSRange2Pei|0x00000000|UINT32|0x2000004F
 
   # If true, enable fast boot feature. the behaviour is totally difference to normal boot.
-  gQuarkPlatformTokenSpaceGuid.PcdEnableFastBoot|TRUE|BOOLEAN|0x20000050
+  gQuarkPlatformTokenSpaceGuid.PcdEnableFastBoot|FALSE|BOOLEAN|0x20000050
 
   # FFS filename to find the Payload application.
   # The FFS filename is B43BD3E1-64D1-4744-9394-D0E1C4DE8C87.
