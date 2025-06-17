@@ -3,8 +3,3 @@
 Report.log
 /SignTool/signed_output/
 /SignTool/withPDAT.bin
-MdeModulePkg/Bus/Pci/PciBusDxe/PciOptionRomSupport_orig.c
-QuarkPlatformPkg/Pci/Dxe/PciHostBridge/PciHostBridge_orig.c
-QuarkPlatformPkg/Pci/Dxe/PciPlatform/PciPlatform_orig.c
-QuarkSocPkg/QuarkNorthCluster/Library/RedirectPeiServicesLib/RedirectPeiServices_orig.c
-QuarkPlatformPkg/Platform/Dxe/PlatformInit/PlatformConfig_orig.c

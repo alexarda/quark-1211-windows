@@ -190,7 +190,8 @@ BaseMemoryTest (
 EFI_STATUS
 SetPlatformImrPolicy (
   IN      EFI_PHYSICAL_ADDRESS    PeiMemoryBaseAddress,
-  IN      UINT64                  PeiMemoryLength
+  IN      UINT64                  PeiMemoryLength,
+  IN      UINTN                   RequiredMemSize
   );
 
 VOID

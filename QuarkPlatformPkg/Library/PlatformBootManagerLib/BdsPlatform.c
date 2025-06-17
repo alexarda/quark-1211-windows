@@ -43,7 +43,6 @@ Abstract:
 
 extern USB_CLASS_FORMAT_DEVICE_PATH gUsbClassKeyboardDevicePath;
 EFI_USER_PROFILE_HANDLE             mCurrentUser = NULL;
-UINT16                              mPayloadBootOptionNumber = 0xffff;
 SECUREBOOT_HELPER_PROTOCOL          *gSecureBootHelperProtocol = NULL;
 EFI_PLATFORM_TYPE_PROTOCOL          *gPlatformType = NULL;
 QUARK_SECURITY_PROTOCOL             *gQuarkSecurityProtocol = NULL;
@@ -477,7 +476,7 @@ FvFilePath (
            );
 
     //
-    // Find out the handle of FV containing the playload file
+    // Find out the handle of FV containing the payload file
     //
     FvHandleBuffer = NULL;
     gBS->LocateHandleBuffer (
@@ -582,101 +581,6 @@ RegisterFvBootOption (
   return EFI_SUCCESS;
 }
 
-EFI_STATUS
-RegisterPayloadBootOption (
-  VOID
-  )
-{
-  EFI_STATUS                     Status;
-  UINT32                         ExpectedBaseAddress;
-  UINT32                         TryBaseAddress;
-  BOOLEAN                        SecureBootEnabled;
-
-  SecureBootEnabled = FALSE;
-
-  ExpectedBaseAddress = (UINTN) PcdGet32(PcdFlashFvPayloadBase);
-  Status = RegisterFvBootOption (
-             (UINTN) ExpectedBaseAddress,
-             (UINTN) PcdGet32(PcdFlashFvPayloadSize),
-             PcdGetPtr (PcdPayloadFile),
-             L"UEFI Payload",
-             (UINTN) 1,
-             TRUE,
-             &mPayloadBootOptionNumber
-             );
-  if (!EFI_ERROR(Status)) {
-    return Status;
-  }
-  DEBUG (
-    (EFI_D_ERROR,
-    "[PlatformBds] ERROR - %r - Register MFH Payload at 0x%08x Failed\n",
-    Status,
-    (UINTN) ExpectedBaseAddress
-    ));
-  if (QuarkCheckSecureLockBoot()) {
-    if (gSecureBootHelperProtocol != NULL) {
-      SecureBootEnabled = gSecureBootHelperProtocol->IsSecureBootEnabled (
-                                                       gSecureBootHelperProtocol
-                                                       );
-    }
-    //
-    // In secure lockdown builds payload must be found if UEFI SecureBoot disabled.
-    //
-    ASSERT (SecureBootEnabled);
-
-    //
-    // Only Payload pointed to by MFH allowed to be installed on secure builds.
-    //
-    return EFI_NOT_FOUND;
-  }
-
-  //
-  // Try 4G - 4M.
-  //
-  TryBaseAddress = 0xFFFFFFFF - (4 *1024 * 1024) + 1;
-  TryBaseAddress += PcdGet32 (PcdFvSecurityHeaderSize);
-  DEBUG ((EFI_D_WARN, "[PlatformBds] Try if payload at 4G-4M base = 0x%08x\n", (UINTN) TryBaseAddress));
-  if (TryBaseAddress != ExpectedBaseAddress) {
-    Status = RegisterFvBootOption (
-               (UINTN) TryBaseAddress,
-               (UINTN) PcdGet32(PcdFlashFvPayloadSize),
-               PcdGetPtr (PcdPayloadFile),
-               L"UEFI Payload",
-               (UINTN) 1,
-               TRUE,
-               &mPayloadBootOptionNumber
-               );
-    if (!EFI_ERROR(Status)) {
-      // Use EFI_D_ERROR so user on release builds knows payload found.
-      DEBUG ((EFI_D_ERROR, "[PlatformBds] Payload found in 4M flash default address\n"));
-      return Status;
-    }
-  }
-  //
-  // Try 4G - 8M.
-  //
-  TryBaseAddress = 0xFFFFFFFF - (8 *1024 * 1024) + 1;
-  TryBaseAddress += PcdGet32 (PcdFvSecurityHeaderSize);
-  DEBUG ((EFI_D_WARN, "[PlatformBds] Try if payload at 4G-8M base = 0x%08x\n", (UINTN) TryBaseAddress));
-  if (TryBaseAddress != ExpectedBaseAddress) {
-    Status = RegisterFvBootOption (
-               (UINTN) TryBaseAddress,
-               (UINTN) PcdGet32(PcdFlashFvPayloadSize),
-               PcdGetPtr (PcdPayloadFile),
-               L"UEFI Payload",
-               (UINTN) 1,
-               TRUE,
-               &mPayloadBootOptionNumber
-               );
-    if (!EFI_ERROR(Status)) {
-      // Use EFI_D_ERROR so user on release builds knows payload found.
-      DEBUG ((EFI_D_ERROR, "[PlatformBds] Payload found in 8M flash default address\n"));
-      return Status;
-    }
-  }
-  return EFI_NOT_FOUND;
-}
-
 VOID
 RegisterLoadOptions (
   VOID
@@ -716,13 +620,6 @@ Returns:
   Enter.ScanCode    = SCAN_NULL;
   Enter.UnicodeChar = CHAR_CARRIAGE_RETURN;
   EfiBootManagerRegisterContinueKeyOption (0, &Enter, NULL);
-
-  //
-  // 1. Add Payload if not flash update and not recovery.
-  //
-  if (BootMode != BOOT_ON_FLASH_UPDATE && BootMode != BOOT_IN_RECOVERY_MODE) {
-    RegisterPayloadBootOption ();
-  }
 
   //
   // 2. Internal Shell if Secure Lock Disabled.
@@ -844,9 +741,6 @@ BootOptionPriority (
   if (StrCmp (BootOption->Description, L"USB Device") == 0) {
     return 10;
   }
-  if (StrCmp (BootOption->Description, L"UEFI Payload") == 0) {
-    return 90;
-  }
   if (StrCmp (BootOption->Description, L"UEFI Internal Shell") == 0) {
     return 100;
   }
@@ -881,52 +775,6 @@ SignalProtocolEvent(IN EFI_GUID *ProtocolGuid)
   gBS->UninstallProtocolInterface (
       Handle, ProtocolGuid, NULL
   );
-}
-
-/**
-  Boot handling when secure lock down enabled.
-
-  Boot payload forever ie if payload returns then boot it again.
-
-  WARNING: Status variable in function needs to be volatile to handle
-  unreachable code error with some compilers.
-
-**/
-VOID
-EFIAPI
-SecureLockBoot (
-  VOID
-  )
-{
-  volatile EFI_STATUS            Status;
-  CHAR16                         OptionName[sizeof ("Boot####")];
-  EFI_BOOT_MANAGER_LOAD_OPTION   BootOption;
-  BOOLEAN                        SecureBootEnabled;
-
-  SecureBootEnabled = FALSE;
-
-  for (Status = EFI_SUCCESS; Status == EFI_SUCCESS; Status = EFI_SUCCESS) {
-    if(gSecureBootHelperProtocol != NULL) {
-      SecureBootEnabled = gSecureBootHelperProtocol->IsSecureBootEnabled (
-                                                       gSecureBootHelperProtocol
-                                                       );
-    }
-
-    if (QuarkCheckSecureLockBoot() && SecureBootEnabled == FALSE) {
-      //
-      // Force boot of payload in secure lock down builds if UEFI SecureBoot disabled.
-      //
-      DEBUG ((EFI_D_INFO, "SecureLockBoot ENABLED and SecureBoot Disabled: Only Allow Payload boot.\n"));
-      UnicodeSPrint (OptionName, sizeof (OptionName), L"Boot%04x", mPayloadBootOptionNumber);
-      Status = EfiBootManagerVariableToLoadOption (OptionName, &BootOption);
-      ASSERT_EFI_ERROR (Status);
-      EfiBootManagerBoot (&BootOption);
-      EfiBootManagerFreeLoadOption (&BootOption);
-    } else {
-      DEBUG ((EFI_D_INFO, "SecureLockBoot Disabled or UEFI Secure boot provisioned: Allow All Boot Options\n"));
-      break;
-    }
-  }
 }
 
 UINT32
@@ -1207,8 +1055,6 @@ Returns:
   //
   DEBUG ((EFI_D_INFO, "Before Entering Setup...\n"));
   SignalProtocolEvent(&gSignalBeforeEnterSetupGuid);
-
-  SecureLockBoot ();
 
   return PLATFORM_BOOT_MANAGER_ENABLE_ALL;
 }

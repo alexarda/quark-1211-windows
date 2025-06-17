@@ -367,7 +367,24 @@ QuarkRequestToLock (
   VOID
   )
 {
-	//do nothing
+  EFI_STATUS                        Status;
+  EDKII_VARIABLE_LOCK_PROTOCOL      *VariableLockProtocol;
+  PLATFORM_VARIABLE_TABLE_ENTRY     *Entry;
+  UINTN                             Index;
+
+  Status = gBS->LocateProtocol (&gEdkiiVariableLockProtocolGuid, NULL, (VOID **) &VariableLockProtocol);
+  ASSERT_EFI_ERROR (Status);
+
+  Entry = mRequestToLockTable;
+  for (Index = 0; Index < mRequestToLockTableLen; Index++, Entry++) {
+    Status = VariableLockProtocol->RequestToLock (
+                                     VariableLockProtocol,
+                                     Entry->VariableName,
+                                     Entry->VendorGuid
+                                     );
+    DEBUG ((DEBUG_INFO, "QuarkRequestToLock '%s':'%g'\n", Entry->VariableName, Entry->VendorGuid));
+    ASSERT_EFI_ERROR (Status);
+  }
 }
 
 /**

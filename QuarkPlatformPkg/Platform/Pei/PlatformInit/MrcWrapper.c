@@ -110,23 +110,16 @@ MrcUartConfig(
 static
 EFI_STATUS
 MrcConfigureFromMcFuses (
-  OUT MRC_PARAMS                          *MrcData
+  OUT MRC_PARAMS *MrcData
   )
 {
-  UINT32                            McFuseStat;
-  CHAR8                             *FuseFlagStr;
+  CHAR8 *FuseFlagStr;
 
-  FuseFlagStr = "";
-  McFuseStat = QNCPortRead (
-                 QUARK_NC_MEMORY_CONTROLLER_SB_PORT_ID,
-                 QUARK_NC_MEMORY_CONTROLLER_REG_DFUSESTAT
-                 );
-
-  // Ensure ECC is always disabled regardless of fuse setting
+  // Force ECC off
   MrcData->ecc_enables = 0;
   FuseFlagStr = ": ECC is forced to be disabled";
 
-  DEBUG ((EFI_D_INFO, "MRC McFuseStat 0x%08x : ECC forcibly disabled\n", McFuseStat));
+  DEBUG ((EFI_D_INFO, "MRC McFuseStat 0x%08x %a\n", 0, FuseFlagStr));
   return EFI_SUCCESS;
 }
 
@@ -886,7 +879,8 @@ InstallEfiMemory (
   //
   Status = SetPlatformImrPolicy (
               PeiMemoryBaseAddress,
-              PeiMemoryLength
+              PeiMemoryLength,
+              RequiredMemSize
               );
   ASSERT_EFI_ERROR (Status);
 
@@ -1649,17 +1643,26 @@ Done:
 EFI_STATUS
 SetPlatformImrPolicy (
   IN      EFI_PHYSICAL_ADDRESS    PeiMemoryBaseAddress,
-  IN      UINT64                  PeiMemoryLength
+  IN      UINT64                  PeiMemoryLength,
+  IN      UINTN                   RequiredMemSize
   )
 {
   UINT8         Index;
   UINT32        Register;
   UINT16        DeviceId;
+  EFI_HOB_GUID_TYPE       *GuidHob;
+  EFI_PLATFORM_INFO       *PlatformInfo;
 
+  //
+  // Update the platform info hob with system PCI resource info
+  //
+  GuidHob       = GetFirstGuidHob (&gEfiPlatformInfoGuid);
+  PlatformInfo  = GET_GUID_HOB_DATA (GuidHob);
+  ASSERT (PlatformInfo);
   //
   // Check what Soc we are running on (read Host bridge DeviceId)
   //
-  DeviceId = QNCMmPci16(0, MC_BUS, MC_DEV, MC_FUN, PCI_DEVICE_ID_OFFSET);
+  DeviceId = QncGetSocDeviceId();
 
   //
   // If any IMR register is locked then we cannot proceed
@@ -1672,45 +1675,80 @@ SetPlatformImrPolicy (
     }
   }
 
-  //
-  // Add IMR2 protection for shadowed RMU binary.
-  //
-  QncImrWrite (
-            QUARK_NC_MEMORY_MANAGER_IMR2,
-            (UINT32)(((RShiftU64((PeiMemoryBaseAddress+PeiMemoryLength), 8)) & IMRH_MASK) | IMR_EN),
-            (UINT32)((RShiftU64((PeiMemoryBaseAddress+PeiMemoryLength+PcdGet32(PcdFlashQNCMicrocodeSize)-1), 8)) & IMRH_MASK),
-            (UINT32)(CPU_SNOOP + RMU + CPU0_NON_SMM),
-            (UINT32)(CPU_SNOOP + RMU + CPU0_NON_SMM)
-        );
+  if (QuarkCheckSecureLockBoot()) {
+    //
+    // Add IMR0 protection for the 'PeiMemory'
+    //
+    QncImrWrite (
+              QUARK_NC_MEMORY_MANAGER_IMR0,
+              (UINT32)(((RShiftU64(PeiMemoryBaseAddress, 8)) & IMRL_MASK) | IMR_EN),
+              (UINT32)((RShiftU64((PeiMemoryBaseAddress+PeiMemoryLength-RequiredMemSize + EFI_PAGES_TO_SIZE(EDKII_DXE_MEM_SIZE_PAGES-1) - 1), 8)) & IMRL_MASK),
+              (UINT32)(CPU_SNOOP + CPU0_NON_SMM),
+              (UINT32)(CPU_SNOOP + CPU0_NON_SMM)
+          );
 
-  //
-  // Add IMR3 protection for the default SMRAM.
-  //
-  QncImrWrite (
-            QUARK_NC_MEMORY_MANAGER_IMR3,
-            (UINT32)(((RShiftU64((SMM_DEFAULT_SMBASE), 8)) & IMRL_MASK) | IMR_EN),
-            (UINT32)((RShiftU64((SMM_DEFAULT_SMBASE+SMM_DEFAULT_SMBASE_SIZE_BYTES-1), 8)) & IMRH_MASK),
-            (UINT32)(CPU_SNOOP + CPU0_NON_SMM),
-            (UINT32)(CPU_SNOOP + CPU0_NON_SMM)
-        );
+    //
+    // Add IMR2 protection for shadowed RMU binary.
+    //
+    QncImrWrite (
+              QUARK_NC_MEMORY_MANAGER_IMR2,
+              (UINT32)(((RShiftU64((PeiMemoryBaseAddress+PeiMemoryLength), 8)) & IMRH_MASK) | IMR_EN),
+              (UINT32)((RShiftU64((PeiMemoryBaseAddress+PeiMemoryLength+PcdGet32(PcdFlashQNCMicrocodeSize)-1), 8)) & IMRH_MASK),
+              (UINT32)(CPU_SNOOP + RMU + CPU0_NON_SMM),
+              (UINT32)(CPU_SNOOP + RMU + CPU0_NON_SMM)
+          );
 
-  //
-  // Enable IMR4 protection of eSRAM.
-  //
-  QncImrWrite (
-            QUARK_NC_MEMORY_MANAGER_IMR4,
-            (UINT32)(((RShiftU64((UINTN)PcdGet32 (PcdEsramStage1Base), 8)) & IMRL_MASK) | IMR_EN),
-            (UINT32)((RShiftU64(((UINTN)PcdGet32 (PcdEsramStage1Base) + (UINTN)PcdGet32 (PcdESramMemorySize) - 1), 8)) & IMRH_MASK),
-            (UINT32)(CPU_SNOOP + CPU0_NON_SMM),
-            (UINT32)(CPU_SNOOP + CPU0_NON_SMM)
-        );
+    //
+    // Add IMR3 protection for the default SMRAM.
+    //
+    QncImrWrite (
+              QUARK_NC_MEMORY_MANAGER_IMR3,
+              (UINT32)(((RShiftU64((SMM_DEFAULT_SMBASE), 8)) & IMRL_MASK) | IMR_EN),
+              (UINT32)((RShiftU64((SMM_DEFAULT_SMBASE+SMM_DEFAULT_SMBASE_SIZE_BYTES-1), 8)) & IMRH_MASK),
+              (UINT32)(CPU_SNOOP + CPU0_NON_SMM),
+              (UINT32)(CPU_SNOOP + CPU0_NON_SMM)
+          );
 
-  //
-  // Enable Interrupt on IMR/SMM Violation
-  //
-  QNCPortWrite (QUARK_NC_MEMORY_MANAGER_SB_PORT_ID, QUARK_NC_MEMORY_MANAGER_BIMRVCTL, (UINT32)(EnableIMRInt));
-  if (DeviceId == QUARK2_MC_DEVICE_ID) {
-    QNCPortWrite (QUARK_NC_MEMORY_MANAGER_SB_PORT_ID, QUARK_NC_MEMORY_MANAGER_BSMMVCTL, (UINT32)(EnableSMMInt));
+    //
+    // Add IMR5 protection for the legacy S3 and AP Startup Vector region (below 1MB).
+    //
+    QncImrWrite (
+              QUARK_NC_MEMORY_MANAGER_IMR5,
+              (UINT32)(((RShiftU64(AP_STARTUP_VECTOR, 8)) & IMRL_MASK) | IMR_EN),
+              (UINT32)((RShiftU64((AP_STARTUP_VECTOR + EFI_PAGE_SIZE - 1), 8)) & IMRH_MASK),
+              (UINT32)(CPU_SNOOP + CPU0_NON_SMM),
+              (UINT32)(CPU_SNOOP + CPU0_NON_SMM)
+          );
+
+    //
+    // Add IMR6 protection for the ACPI Reclaim/ACPI/Runtime Services.
+    //
+    QncImrWrite (
+              QUARK_NC_MEMORY_MANAGER_IMR6,
+              (UINT32)(((RShiftU64((PeiMemoryBaseAddress+PeiMemoryLength-RequiredMemSize+EFI_PAGES_TO_SIZE(EDKII_DXE_MEM_SIZE_PAGES-1)), 8)) & IMRL_MASK) | IMR_EN),
+              (UINT32)((RShiftU64((PeiMemoryBaseAddress+PeiMemoryLength-EFI_PAGE_SIZE-1), 8)) & IMRH_MASK),
+              (UINT32)(CPU_SNOOP + CPU0_NON_SMM),
+              (UINT32)(CPU_SNOOP + CPU0_NON_SMM)
+          );
+
+    //
+    // Enable IMR4 protection of eSRAM.
+    //
+    QncImrWrite (
+              QUARK_NC_MEMORY_MANAGER_IMR4,
+              (UINT32)(((RShiftU64((UINTN)FixedPcdGet32 (PcdEsramStage1Base), 8)) & IMRL_MASK) | IMR_EN),
+              (UINT32)((RShiftU64(((UINTN)FixedPcdGet32 (PcdEsramStage1Base) + (UINTN)FixedPcdGet32 (PcdESramMemorySize) - 1), 8)) & IMRH_MASK),
+              (UINT32)(CPU_SNOOP + CPU0_NON_SMM),
+              (UINT32)(CPU_SNOOP + CPU0_NON_SMM)
+          );
+
+    //
+    // Enable Interrupt on IMR/SMM Violation
+    //
+    QNCPortWrite (QUARK_NC_MEMORY_MANAGER_SB_PORT_ID, QUARK_NC_MEMORY_MANAGER_BIMRVCTL, (UINT32)(EnableIMRInt));
+    if (DeviceId == QUARK2_MC_DEVICE_ID) {
+      QNCPortWrite (QUARK_NC_MEMORY_MANAGER_SB_PORT_ID, QUARK_NC_MEMORY_MANAGER_BSMMVCTL, (UINT32)(EnableSMMInt));
+    }
   }
 
   //
@@ -1724,6 +1762,21 @@ SetPlatformImrPolicy (
             (UINT32)IMRX_ALL_ACCESS,
             (UINT32)IMRX_ALL_ACCESS
         );
+
+  //
+  // Save IMRs registers to PlatformInfo to be validated
+  //
+  for (Index = 0; Index < QUARK_NC_TOTAL_IMR_SET; Index++)
+  {
+    PlatformInfo->ImrData[Index].RegImrXL = QNCPortRead (QUARK_NC_MEMORY_MANAGER_SB_PORT_ID,   \
+                                            QUARK_NC_MEMORY_MANAGER_IMR0+(Index*4) + QUARK_NC_MEMORY_MANAGER_IMRXL);
+    PlatformInfo->ImrData[Index].RegImrXH = QNCPortRead (QUARK_NC_MEMORY_MANAGER_SB_PORT_ID,   \
+                                            QUARK_NC_MEMORY_MANAGER_IMR0+(Index*4) + QUARK_NC_MEMORY_MANAGER_IMRXH);
+    PlatformInfo->ImrData[Index].RegImrXRM = QNCPortRead (QUARK_NC_MEMORY_MANAGER_SB_PORT_ID,  \
+                                             QUARK_NC_MEMORY_MANAGER_IMR0+(Index*4) + QUARK_NC_MEMORY_MANAGER_IMRXRM);
+    PlatformInfo->ImrData[Index].RegImrXWM = QNCPortRead (QUARK_NC_MEMORY_MANAGER_SB_PORT_ID,  \
+                                             QUARK_NC_MEMORY_MANAGER_IMR0+(Index*4) + QUARK_NC_MEMORY_MANAGER_IMRXWM);
+  }
 
   return EFI_SUCCESS;
 }
